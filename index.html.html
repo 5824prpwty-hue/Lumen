@@ -1,0 +1,442 @@
+<!DOCTYPE html>
+<html lang="es"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Lumen</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,700&family=Manrope:wght@400;600&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#f3efe8;--sf:#fffdf8;--tx:#1b2033;--mu:#6b7085;--ac:#a9741a;--ln:#e2dccf;--on:#fff;color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media(prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#10142a;--sf:#181e3a;--tx:#f1ede4;--mu:#9aa0bd;--ac:#f0b84d;--ln:#29305a;--on:#10142a;color-scheme:dark}}
+:root[data-theme="dark"]{--bg:#10142a;--sf:#181e3a;--tx:#f1ede4;--mu:#9aa0bd;--ac:#f0b84d;--ln:#29305a;--on:#10142a;color-scheme:dark}
+*{box-sizing:border-box}html,body{height:100%;margin:0}
+body{background:var(--bg);color:var(--tx);font:400 16px/1.5 Manrope,system-ui,sans-serif;display:flex;flex-direction:column}
+main{flex:1;overflow-y:auto;padding:20px 18px 12px;max-width:640px;width:100%;margin:0 auto}
+h1{font:700 34px/1.1 Fraunces,Georgia,serif;margin:8px 0 4px}
+h2{font:500 20px/1.2 Fraunces,Georgia,serif;margin:22px 0 8px;color:var(--ac)}
+p.s{color:var(--mu);margin:0 0 16px}
+input{width:100%;padding:14px 16px;border-radius:14px;border:1px solid var(--ln);background:var(--sf);color:var(--tx);font:inherit}
+input:focus,button:focus-visible,a:focus-visible{outline:2px solid var(--ac);outline-offset:2px}
+.it{display:flex;justify-content:space-between;gap:12px;width:100%;text-align:left;background:none;border:0;border-bottom:1px solid var(--ln);padding:13px 2px;color:var(--tx);font:inherit;cursor:pointer}
+.it small{color:var(--mu)}
+nav{display:flex;border-top:1px solid var(--ln);background:var(--sf);padding-bottom:env(safe-area-inset-bottom,0px)}
+nav button{flex:1;background:none;border:0;padding:12px 4px 10px;color:var(--mu);font:600 13px Manrope,sans-serif;cursor:pointer}
+nav button[aria-selected="true"]{color:var(--ac)}
+nav svg{display:block;margin:0 auto 3px;width:22px;height:22px;fill:none;stroke:currentColor;stroke-width:1.7}
+.btn{background:var(--ac);color:var(--on);border:0;border-radius:14px;padding:13px 18px;font:600 16px Manrope,sans-serif;cursor:pointer}
+.ghost{background:none;border:1px solid var(--ln);color:var(--tx)}
+.card{background:var(--sf);border:1px solid var(--ln);border-radius:18px;padding:16px;margin:14px 0}
+.ch{font:600 20px/1.6 ui-monospace,Menlo,monospace;color:var(--ac);letter-spacing:.04em}
+.row{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+.v{font:400 19px/1.65 Fraunces,Georgia,serif;margin:14px 0}.v b{color:var(--ac);font:600 13px Manrope,sans-serif;margin-right:6px}
+a{color:var(--ac)}[hidden]{display:none!important}
+.sg{overflow-x:auto;padding-bottom:20px}.sg div{white-space:pre;font:14px/1.55 ui-monospace,Menlo,monospace}.sg .ch{color:var(--ac);font-weight:700}
+</style></head><body>
+<main id="m"></main>
+<nav role="tablist">
+<button role="tab" data-t="c"><svg viewBox="0 0 24 24"><path d="M9 18V5l11-2v13"/><circle cx="6.5" cy="18" r="2.5"/><circle cx="17.5" cy="16" r="2.5"/></svg>Cancionero</button>
+<button role="tab" data-t="b"><svg viewBox="0 0 24 24"><path d="M4 4h7a2 2 0 0 1 2 2v14a2 2 0 0 0-2-2H4zM20 4h-7v16a2 2 0 0 1 2-2h5z"/></svg>Biblia</button>
+<button role="tab" data-t="h"><svg viewBox="0 0 24 24"><path d="M12 21s7-6.2 7-11.5A7 7 0 0 0 5 9.5C5 14.800 12 21 12 21z"/><circle cx="12" cy="9.500" r="2.500"/></svg>Hora Santa</button>
+</nav>
+<script>
+const S={"Hakuna":"Al estar en la presencia|Enciéndeme|Tomad, comed|Deseo|Bien amado Señor|Que bien se está cuando se está bien|Libertad|Tan cerca|Hoy te dejo|Pasión de Dios|Un Dios débil|Bendita sea tu pureza",
+"Mi pobre loco":"Tu misericordia|Quiero cenar contigo|Un paso más|Cuatro vientos|Siempre imaginé|Que no se pierda ninguno|Nombre sobre todo nombre|Tu rostro|Tonto|Mi pobre loco|Revolución|Imprescindible",
+"Pasión":"No sé qué viste en mí|Mi peso en tus hombros|Paraísos sin tu rostro|Cirineo|Verónica|Y te caes|Jerusalem|¿Por qué?|Despojado|La medida del amor|Madre|Donde estás tú|Soy libre|Por mí, por ti",
+"Sencillamente":"Sencillamente|Ocúpate Tú de todo|La piel por ti|El abrazo|En lo hondo|Colombia|Vértigo|Conciénciame|Bendito|Arde|Todos por todos|Forofos|Madre de Hakuna",
+"Qaos":"Me sobrepasa|Descalzos|Un segundo|Todo|El cielo aguarda|Huracán|Mirada|Pringados|Noche|Comunión espiritual",
+"Capricho":"Olor a tostadas|Baila y déjate de historias|Ojalá|Cuarto lugar|Capricho|Pluma de escribano|Nacidos de lo alto|¿Por qué lloras?|Entre anestesias|Dime Padre|Exulte mi alma",
+"El arte de vivir":"Un sitio|El arte de vivir|Mi Amado|La fila|Loco|No te vas|Nada|Trueno|El Rey de la Gloria",
+"Tú":"A ti te alabo|Los coros del universo|En medio del fuego|Aleluya|Ruah|Padre|Te alabaré|Sanas|Sólo Tú|El único Rey",
+"Misa":"Convocados|Señor ten piedad|Gloria|Santo|Cordero de Dios|Padre Nuestro|Demos gracias",
+"Villancicos":"Hoy en Belén|Lo imposible|Del cielo|Juntos",
+"Hora Santa":"Ven Espíritu ven|Te amo Rey|Cara a cara|Lord I need you|No adoréis|El Rey de mi vida"};
+const songs=Object.entries(S).flatMap(([a,t])=>t.split("|").map(n=>({n,a})));
+const demo={"Huracán":["G","D","Em","C"]};
+const N=["C","C#","D","D#","E","F","F#","G","G#","A","A#","B"];
+const tr=(c,k)=>c.replace(/[A-G]#?/g,x=>N[(N.indexOf(x)+k+120)%12]);
+const bib=[["Salmos 23:1","Jehová es mi pastor; nada me faltará."],["Juan 3:16","Porque de tal manera amó Dios al mundo, que ha dado á su Hijo unigénito, para que todo aquel que en él creyere, no se pierda, mas tenga vida eterna."],["Mateo 11:28","Venid á mí todos los que estáis trabajados y cargados, y yo os haré descansar."]];
+const norm=s=>s.normalize("NFD").replace(/[\u0300-\u036f]/g,"").toLowerCase();
+const m=document.getElementById("m");let tab="c";
+function show(t){tab=t;document.querySelectorAll("nav button").forEach(b=>b.setAttribute("aria-selected",b.dataset.t===t));({c:cant,b:biblia,h:hora})[t]();m.scrollTop=0}
+function cant(){m.innerHTML=`<h1>Cancionero</h1><p class="s">${songs.length} canciones de Hakuna</p><input id="q" type="search" placeholder="Busca una canción, p. ej. Huracán" autocomplete="off"><div id="l"></div>`;
+const l=document.getElementById("l"),q=document.getElementById("q");
+const draw=()=>{const f=norm(q.value);let h="",last="";songs.filter(s=>norm(s.n).includes(f)).forEach(s=>{if(!f&&s.a!==last){h+=`<h2>${s.a}</h2>`;last=s.a}h+=`<button class="it" data-n="${s.n}">${s.n}<small>${f?s.a:""}</small></button>`});l.innerHTML=h||'<p class="s">Sin resultados. Prueba con otra palabra.</p>'};
+q.oninput=draw;draw();l.onclick=e=>{const b=e.target.closest(".it");if(b)song(b.dataset.n)}}
+function song(n){let k=0;const c=demo[n];
+const r=()=>{m.innerHTML=`<button class="btn ghost" id="bk">Volver</button><h1>${n}</h1><p class="s">${songs.find(s=>s.n===n).a}</p>
+<div class="card"><div class="row"><button class="btn ghost" id="mn" aria-label="Bajar un semitono">−</button><b>Tono ${k>0?"+":""}${k}</b><button class="btn ghost" id="pl" aria-label="Subir un semitono">+</button></div>
+${c?`<p class="ch">${c.map(x=>tr(x,k)).join("  ")}</p><p class="s">Acordes de la intro. La letra completa se cargará desde tu PDF.</p>`:`<p class="s">Acordes y letra pendientes de cargar desde tu PDF.</p>`}</div>
+<div class="card"><b>Escuchar</b><p class="s">El reproductor se conectará con la canción completa. De momento:</p><a href="https://www.youtube.com/results?search_query=Hakuna+Group+Music+${encodeURIComponent(n)}" target="_blank" rel="noopener">Buscar en YouTube</a></div>`;
+bk.onclick=cant;mn.onclick=()=>{k--;r()};pl.onclick=()=>{k++;r()}};r()}
+function biblia(){m.innerHTML=`<h1>Biblia</h1><p class="s">Buscador por palabra o cita</p><input id="q" type="search" placeholder="Busca «pastor», «Juan 3»…" autocomplete="off"><div id="l"></div><p class="s">Vista previa con 3 versículos (Reina-Valera 1909). El texto completo se añadirá en la siguiente fase.</p>`;
+const q=document.getElementById("q"),l=document.getElementById("l");
+const d=()=>{const f=norm(q.value);l.innerHTML=bib.filter(v=>norm(v[0]+v[1]).includes(f)).map(v=>`<div class="v"><b>${v[0]}</b>${v[1]}</div>`).join("")||'<p class="s">Sin resultados.</p>'};q.oninput=d;d()}
+function hora(){m.innerHTML=`<h1>Horas Santas</h1><p class="s">Encuentra la Hora Santa Hakuna más cercana</p><button class="btn" id="g">Usar mi ubicación</button><div id="o" class="card" hidden></div>`;
+g.onclick=()=>{const o=document.getElementById("o");o.hidden=false;o.textContent="Buscando tu ubicación…";
+if(!navigator.geolocation){o.textContent="Tu dispositivo no permite la ubicación.";return}
+navigator.geolocation.getCurrentPosition(p=>{o.textContent="Ubicación recibida. Aún no hay horas santas cargadas: necesito la lista de ciudades, horarios y lugares.";},()=>{o.textContent="No pude acceder a tu ubicación. Actívala en los ajustes del navegador e inténtalo de nuevo."},{timeout:10000})}}
+const GN={U:"Universitarios",P:"Profesionales",F:"Frontera",S:"Summit",E:"Senior",K:"Kids",T:"Todos los grupos"};
+const DN={L:"Lunes",M:"Martes",X:"Miércoles",J:"Jueves",V:"Viernes",S:"Sábado",D:"Domingo"};
+const XY=Object.fromEntries("Lima:-12.1,-77|Ginebra:46.2,6.15|Cali:3.4,-76.5|Valencia VE:10.2,-68|Salamanca:41,-5.7|CDMX:19.4,-99.1|Berlín:52.5,13.4|Murcia:38,-1.1|Lausana:46.5,6.6|Granada:37.2,-3.6|Eindhoven:51.4,5.5|Lisboa:38.7,-9.15|Toluca:19.3,-99.7|Madrid:40.4,-3.7|Las Rozas:40.5,-3.9|Alicante:38.35,-0.5|San Sebastián:43.3,-2|Mercedes Sur:9.8,-84.3|San Justo:-34.7,-58.55|Ciudad Real:39,-3.9|El Paso:31.8,-106.5|Dublín:53.3,-6.3|Washington:38.9,-77.05|Frankfurt:50.1,8.7|Albacete:39,-1.85|Alcoy:38.7,-0.5|Bilbao:43.3,-2.95|Almería:36.8,-2.45|San Antonio:29.4,-98.5|Badajoz:38.9,-6.97|El Puerto de Santa María:36.6,-6.2|Castellón:40,-0.05|Chihuahua:28.6,-106.1|Cieza:38.2,-1.4|Cáceres:39.5,-6.4|Córdoba:37.9,-4.8|Guayaquil:-2.1,-79.9|Lérida:41.6,0.6|Monterrey:25.7,-100.3|Málaga:36.7,-4.4|Pamplona:42.8,-1.65|Santander:43.5,-3.8|Toledo:39.9,-4|Valladolid:41.65,-4.7|Zaragoza:41.65,-0.9|Rosario:-32.95,-60.65|Barcelona:41.4,2.15|Buenos Aires:-34.6,-58.4|Burgos:42.35,-3.7|Cartagena:37.6,-1|Girona:42,2.8|Gran Canaria:28.1,-15.4|A Coruña:43.4,-8.4|Varsovia:52.2,21|Alcorcón:40.35,-3.8|Valdemoro:40.2,-3.7|Mallorca:39.6,2.65|Oviedo:43.4,-5.85|Sevilla:37.4,-6|Tenerife:28.5,-16.3|Maastricht:50.85,5.7|Valencia:39.5,-0.4|Londres:51.5,-0.1|Bruselas:50.8,4.4|Luxemburgo:49.6,6.1|Roma:41.9,12.5|Milán:45.5,9.2|París:48.85,2.3|Oporto:41.15,-8.6|Guadalajara MX:20.7,-103.35|Querétaro:20.6,-100.4|Los Cabos:22.9,-109.9|Culiacán:24.8,-107.4|Tegucigalpa:14.1,-87.2|Quito:-0.2,-78.5|Mendoza:-32.9,-68.85|Santa Fe AR:-31.6,-60.7|Santiago de Chile:-33.45,-70.6|Montevideo:-34.9,-56.2|Bogotá:4.7,-74.05|Seúl:37.5,127|Yecla:38.6,-1.1|Ontinyent:38.8,-0.6|Morelia:19.7,-101.2|León:21.1,-101.7|Barquisimeto:10.1,-69.3|Irapuato:20.7,-101.35|Asunción:-25.3,-57.6|Núremberg:49.45,11.1|Aveiro:40.6,-8.65|Santiago de Compostela:42.9,-8.55|Talavera:39.95,-4.8|Caracas:10.5,-66.9|Rionegro:6.15,-75.4|Boston:42.35,-71.05|San José CR:9.9,-84.1|Venecia:10.4,-84.35|Cartago:9.85,-83.9|Guatemala:14.6,-90.5|Antigua:14.55,-90.7|Celaya:20.5,-100.8|Aguascalientes:21.9,-102.3|Veracruz:19.2,-96.15|Mérida:38.9,-6.35|Guadalajara:40.6,-3.15|Turmero:10.2,-67.5|Maracay:10.25,-67.6|Zacatecas:22.8,-102.55|Rivas:40.35,-3.55|Cuautitlán Izcalli:19.65,-99.2".split("|").map(s=>{const[a,b]=s.split(":");return[a,b.split(",").map(Number)]}));
+const HS=`Lima|N.ª S.ª de Belén|L 19:30|E
+Ginebra|Misión Católica Italiana|L 20:15|P
+Cali|Colegio Lacordaire|M 19:15|T
+Valencia VE|La Resurrección del Señor|D 18:00|T
+Salamanca|San Martín de Tours|M 20:00|U
+Salamanca|San Martín de Tours|L 20:00|PE
+CDMX|Madre de Dios|M 20:30|U
+Berlín|St. Norbert|J 19:35|UP
+Murcia|San Lorenzo|L 20:40|F
+Murcia|San Juan Bautista|M 20:30|SE
+Lausana|Parroquia de Renens|J 19:45|UPF
+Granada|N.ª S.ª de Gracia|J 20:30|U
+Granada|N.ª S.ª de Gracia|V 20:30|SE
+Granada|N.ª S.ª del Carmen|M 20:30|PF
+Eindhoven|Sint Joriskerk|J 19:45|UP
+Lisboa|Mosteiro do Imaculado Coração de Maria|L 20:30|UP
+Toluca|Jesús Nazareno|M 20:00|UP
+Las Rozas|El Estudio|L 21:00|U
+Las Rozas|El Estudio|S 11:30|F
+Madrid|Monjas Concepcionistas (Blasco de Garay 51)|J 21:00|U
+Madrid|N.ª S.ª de Fuente del Fresno|X 21:00|E
+Madrid|San Vicente de Paúl (Carabanchel)|L 21:00|UP
+Madrid|Sta. María del Montecarmelo|L 20:45|P
+Madrid|Santísimo Sacramento|L 20:45|P
+Madrid|Edith Stein|J 21:00|S
+Madrid|Sta. María Magdalena|J 20:30|E
+CDMX|N.ª S.ª de Lourdes|L 20:30|P
+Alicante|San Juan Bautista de Benalúa|J 20:45|UP
+Alicante|San Juan de Ávila|J 20:45|FSE
+San Sebastián|San Sebastián Mártir|L 20:00|T
+Mercedes Sur|Dulce Nombre de Jesús|M 19:15|UP
+San Justo|Catedral Santos Justo y Pastor|V 19:45|UP
+Lima|Capilla Jesús Hostia|J 20:00|UP
+Ciudad Real|San Pedro|X 20:30|UPE
+El Paso|Our Lady of Guadalupe|M 19:30|UP
+Dublín|Mary Immaculate Refuge of Sinners|M 19:30|UP
+Washington|Our Lady Queen of the Americas|X 19:00|T
+Frankfurt|St. Antonius|J 19:30|UP
+Albacete|San Juan Bautista|J 21:00|UPE
+Alcoy|San Jorge|X 20:30|UP
+Bilbao|N.ª S.ª del Carmen de Indautxu|M 20:15|T
+Almería|Espíritu Santo|J 20:30|UP
+Almería|San Isidro Labrador|J 20:30|E
+San Antonio|Our Lady of Sorrows|L 19:00|UP
+Badajoz|Catedral|X 20:30|UPFSE
+Badajoz|Santa Eulalia (un domingo al mes)|D 20:30|K
+El Puerto de Santa María|Iglesia Mayor Prioral|M 21:00|UP
+Castellón|El Salvador|L 20:15|UP
+Chihuahua|Asunción de María|J 19:00|UP
+Cieza|San José Obrero|L 20:30|U
+Cáceres|Ermita de San Blas|M 20:30|UPE
+Córdoba|Santa Cecilia|L 20:45|PF
+Guayaquil|Santa Teresita, Entre Ríos|M 20:00|UP
+Lérida|La Mercé|L 20:15|T
+Monterrey|N.ª S.ª Reina de los Ángeles|X 19:45|E
+Monterrey|San Juan Bosco|M 20:00|U
+Monterrey|N.ª S.ª de Fátima|L 20:15|P
+Málaga|San Agustín|J 21:00|UP
+Murcia|San Pedro|M 20:45|U
+Murcia|San Nicolás de Bari|M 20:45|P
+Pamplona|Sta. María de Ermitagaña|L 20:15|U
+Pamplona|San Miguel|X 20:30|P
+Santander|N.ª S.ª del Carmen y Sta. Teresa|M 20:15|U
+Santander|Santísimo Cristo|M 20:00|PFE
+Toledo|Buen Pastor|L 21:00|UP
+Toledo|Santa Beatriz de Silva|X 19:00|F
+Toledo|Oblatas de Cristo Sacerdote|J 20:00|E
+Valladolid|Basílica de la Gran Promesa|L 20:45|T
+Zaragoza|Sagrado Corazón|J 20:00|U
+Zaragoza|N.ª S.ª del Portillo|L 20:00|P
+Zaragoza|San Gil Abad|V 19:00|F
+Zaragoza|Hospital N.ª S.ª de Gracia|L 20:30|E
+Rosario|Capilla Niño Dios|X 20:00|UP
+Barcelona|Mare de Déu dels Dolors|L 21:00|U
+Barcelona|Madre de Dios de la Bonanova|L 20:45|P
+Barcelona|San Vicente de Sarrià|J 21:00|E
+Barcelona|Sant Eugeni Papa|L 20:45|P
+Buenos Aires|N.ª S.ª de Loreto|L 19:45|UP
+Burgos|San Lorenzo el Real|J 20:45|UP
+Burgos|San Lorenzo el Real|V 20:45|SE
+Cartagena|N.ª S.ª del Carmen|M 20:30|UP
+Girona|Sagrado Corazón|L 20:30|T
+Gran Canaria|San Nicolás de Bari|M 20:30|UP
+A Coruña|Iglesia Castrense de San Andrés|M 20:45|UP
+Varsovia|San Alejandro|M 18:30|UP
+Alcorcón|Inmaculada Concepción|J 21:00|UP
+Valdemoro|San Vicente de Paúl|M 20:30|SE
+Mallorca|Santa Catalina Thomàs|M 20:00|UP
+Oviedo|Corazón de María|L 20:45|UP
+Oviedo|N.ª S.ª del Carmen|D 18:00|SE
+Sevilla|N.ª S.ª del Buen Aire|X 21:00|U
+Sevilla|N.ª S.ª del Mar|L 20:15|P
+Sevilla|Monjas Mínimas|L 20:30|E
+Tenerife|Catedral de La Laguna|X 20:00|UP
+Tenerife|Cruz del Señor|J 19:45|E
+Maastricht|Sint Matthiaskerk|V 19:30|UP
+Valencia|San Pascual Baylón|L 20:45|U
+Valencia|Santo Ángel Custodio|L 20:45|P
+Valencia|San Lorenzo|M 20:30|SE
+Valencia|Alfinach (un sábado al mes)|S 11:00|F
+Londres|St Peter and St Paul|J 18:30|UP
+Bruselas|Iglesia de Viale Europe|L 19:30|UP
+Luxemburgo|Église Saint Joseph|M 19:30|UP
+Roma|Sant'Andrea della Valle|M 20:30|UP
+Milán|Santa Maria delle Grazie|M 20:00|UP
+París|Mission Catholique Espagnole|J 20:00|UP
+Oporto|São José das Taipas|L 19:45|UP
+Guadalajara MX|N.ª S.ª de la Salud|M 20:00|E
+Guadalajara MX|Santa María de los Ángeles|X 20:15|UP
+Querétaro|Santa Teresita|M 20:00|UP
+Los Cabos|San Judas Tadeo|M 20:00|UP
+Culiacán|Cristo Rey|M 18:30|UP
+Tegucigalpa|Sagrado Corazón|X 19:15|UP
+Quito|María Auxiliadora|X 19:45|UP
+Mendoza|Señor del Milagro|J 20:30|UP
+Mendoza|N.ª S.ª de Monserrat|X 20:00|E
+Santa Fe AR|Basílica N.ª S.ª del Carmen|X 19:45|UP
+Santiago de Chile|Sagrado Corazón de Apoquindo|L 20:00|UPF
+Montevideo|San Pedro Apóstol|L 20:00|UP
+Bogotá|Dei Verbum|M 19:00|U
+Bogotá|San Juan de Ávila|J 19:00|PE
+Seúl|Banpo 1-dong|V 19:30|UP
+Yecla|Niño Jesús|V 21:00|T
+Ontinyent|San Rafael|X 20:30|UP
+Morelia|Niño de la Salud|L 19:15|T
+León|San Patricio|M 20:00|T
+Barquisimeto|Santo Cristo de la Gracia|V 19:00|T
+Irapuato|Señor de la Misericordia|X 20:00|T
+Asunción|Espíritu Santo|X 20:00|UP
+Núremberg|Centro Ukama|X 19:30|T
+Aveiro|CUFC|J 20:00|UP
+Santiago de Compostela|Iglesia de las Huérfanas|L 20:30|UP
+Talavera|N.ª S.ª del Pilar|J 21:00|T
+Caracas|San José de Chacao|L 19:00|T
+Caracas|La Ascensión del Señor|M 18:30|T
+Caracas|San Pablo Apóstol|V 18:00|T
+Rionegro|Madre de la Sabiduría|V 19:00|UP
+Boston|Saint Mary of the Annunciation|J 19:30|UP
+San José CR|N.ª S.ª Virgen de Loreto|J 19:00|E
+Venecia|N.ª S.ª de la Candelaria|J 19:00|UPFSE
+Cartago|Capilla del Divino Niño|J 19:15|UP
+Guatemala|Colegio Bethania|J 20:00|UP
+Antigua|La Merced|X 19:00|UP
+Celaya|Sagrado Corazón|J 19:45|T
+Aguascalientes|San Juan de los Lagos|J 20:30|T
+Veracruz|San Charbel|V 20:00|T
+Mérida|Basílica de Santa Eulalia|M 20:15|T
+Guadalajara|Concatedral de Santa María|M 20:45|UP
+Turmero|Perpetuo Socorro|V 19:00|T
+Maracay|La Resurrección del Señor|X 19:00|T
+Zacatecas|Medalla Milagrosa|V 20:00|UP
+Rivas|Santa Mónica|J 20:45|UPF
+Cuautitlán Izcalli|N.ª S.ª del Carmen|V 19:00|UPF`.split("\n").map(l=>{const[c,p,t,g]=l.split("|");return{c,p,d:t[0],h:t.slice(2),g}});
+const km=(a,b)=>{const r=Math.PI/180,x=(b[1]-a[1])*r*Math.cos((a[0]+b[0])*r/2),y=(b[0]-a[0])*r;return Math.round(6371*Math.hypot(x,y))};
+function hora(){let me=null,dy="";
+m.innerHTML=`<h1>Horas Santas</h1><p class="s">${HS.length} Horas Santas de Hakuna en el mundo</p><button class="btn" id="g">Cerca de mí</button><div class="row" id="dc" style="margin:14px 0"></div><input id="q" type="search" placeholder="Busca ciudad o parroquia" autocomplete="off"><div id="l"></div><p class="s">Datos de hakuna.org. Para contactar con cada responsable, entra en <a href="https://hakuna.org/horas-santas/" target="_blank" rel="noopener">hakuna.org/horas-santas</a>.</p>`;
+const q=document.getElementById("q"),l=document.getElementById("l"),dc=document.getElementById("dc"),g=document.getElementById("g");
+const draw=()=>{dc.innerHTML=["",..."LMXJVSD"].map(d=>`<button class="btn${dy===d?"":" ghost"}" data-d="${d}" style="padding:8px 12px">${d||"Todos"}</button>`).join("");
+const f=norm(q.value);let r=HS.filter(s=>(!dy||s.d===dy)&&norm(s.c+s.p).includes(f)).map(s=>({...s,k:me&&XY[s.c]?km(me,XY[s.c]):null}));
+r.sort((a,b)=>me?(a.k??1e9)-(b.k??1e9):a.c.localeCompare(b.c));r=r.slice(0,me?25:60);
+l.innerHTML=r.map(s=>`<div class="card"><b>${s.p}</b><br>${s.c.replace(/ (VE|MX|AR|CR)$/,"")} · ${DN[s.d]} ${s.h}<br><small>${[...s.g].map(x=>GN[x]).join(", ")}${s.k!=null?" · a "+s.k+" km":""}</small><br><a href="https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(s.p+" "+s.c)}" target="_blank" rel="noopener">Cómo llegar</a></div>`).join("")||'<p class="s">Sin resultados. Prueba otro día o ciudad.</p>'};
+dc.onclick=e=>{const b=e.target.closest("button");if(b){dy=b.dataset.d;draw()}};q.oninput=draw;
+g.onclick=()=>{g.textContent="Buscando tu ubicación…";if(!navigator.geolocation){g.textContent="Ubicación no disponible";return}
+navigator.geolocation.getCurrentPosition(p=>{me=[p.coords.latitude,p.coords.longitude];g.textContent="Ordenadas por cercanía";draw()},()=>{g.textContent="Cerca de mí";l.insertAdjacentHTML("afterbegin",'<p class="s">No pude acceder a tu ubicación. Actívala en los ajustes e inténtalo de nuevo, o busca tu ciudad.</p>')},{timeout:10000})};draw()}
+const esc=s=>String(s).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+const lib=()=>{try{return JSON.parse(localStorage.getItem("lib")||"[]")}catch(e){return[]}};
+const CH=/^\(?[A-G][#b]?(m|M|maj|sus|add|dim|aug)?#?\d*(sus\d|add\d)?(\/[A-G][#b]?)?\*?\)?$/;
+const isCh=s=>{const t=s.trim().split(/\s+/);return t.every(x=>CH.test(x)||/^[-–\/]$|^\(?x\d\)?$/.test(x))&&t.some(x=>CH.test(x))};
+const FL={Db:"C#",Eb:"D#",Gb:"F#",Ab:"G#",Bb:"A#"};
+const nc=c=>c.replace(/([A-G])m#/g,"$1#m").replace(/[A-G]b/g,x=>FL[x]||x);
+const SEC=new Set(["HAKUNA","MI POBRE LOCO","PASIÓN","SENCILLAMENTE","QAOS","CAPRICHO","EL ARTE DE VIVIR","TÚ","MISA","VILLANCICOS","VILLANCICOS HKN","OTRAS","CANCIONES","HKN:","HORA SANTA:","SANTA MISA","OTRAS CANCIONES DE MISA"]);
+async function parsePDF(f,prog){
+if(!window.pdfjsLib)throw new Error("nolib");
+pdfjsLib.GlobalWorkerOptions.workerSrc="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js";
+const pdf=await pdfjsLib.getDocument({data:await f.arrayBuffer()}).promise;
+const out=[];let cur=null,sec="",pend=null,last=0;
+const fl=()=>{if(pend&&cur){const b=pend[0].x;cur.lines.push({l:"",ch:pend.map(a=>[Math.round((a.x-b)/5),a.c])})}pend=null};
+for(let p=1;p<=pdf.numPages;p++){prog(p,pdf.numPages);
+const tc=await(await pdf.getPage(p)).getTextContent();const rows=[];
+tc.items.forEach(it=>{if(!it.str.trim())return;const y=it.transform[5];let r=rows.find(r=>Math.abs(r.y-y)<3);if(!r){r={y,it:[]};rows.push(r)}r.it.push({s:it.str,x:it.transform[4],w:it.width})});
+rows.sort((a,b)=>b.y-a.y);
+for(const r of rows){r.it.sort((a,b)=>a.x-b.x);
+let t="",pe=null;r.it.forEach(i=>{if(pe!==null&&i.x-pe>1.5&&!t.endsWith(" ")&&!i.s.startsWith(" "))t+=" ";t+=i.s;pe=i.x+i.w});
+const T=t.trim().replace(/\s+/g," ");if(!T)continue;
+if(T===T.toUpperCase()&&SEC.has(T)){sec=T.replace(/:$/,"");continue}
+const mt=T.match(/^(\d{1,3})\.\s+(.{2,})$/);
+if(mt){const n=+mt[1];if(n===last+1||n===1){fl();cur={n,t:mt[2].trim(),s:sec,lines:[]};out.push(cur);last=n;continue}}
+if(!cur)continue;
+if(isCh(T)){fl();const its=[];r.it.forEach(i=>{const re=/\S+/g;let m;while((m=re.exec(i.s)))its.push({c:nc(m[0]),x:i.x+i.w*m.index/Math.max(i.s.length,1)})});pend=its;continue}
+if(!cur.lines.length&&!pend&&!/[a-z]/.test(T)&&T.length<40){cur.t+=" "+T;continue}
+const x0=r.it[0].x,e=r.it[r.it.length-1],cw=(e.x+e.w-x0)/Math.max(t.trimStart().length,1);
+cur.lines.push({l:t.trim(),ch:pend?pend.map(a=>[Math.max(0,Math.round((a.x-x0)/cw)),a.c]):[]});pend=null}}
+fl();
+const by={};out.forEach(s=>{if(!by[s.n]||s.lines.length>by[s.n].lines.length)by[s.n]=s});
+return Object.values(by).filter(s=>s.lines.length).sort((a,b)=>a.n-b.n)}
+function cant(){const L=lib();
+m.innerHTML=`<h1>Cancionero</h1><p class="s">${L.length?L.length+" canciones":"Importa tu cancionero para empezar"}</p>`+(L.length?`<input id="q" type="search" placeholder="Busca una canción, p. ej. Huracán" autocomplete="off"><div id="l"></div><div class="row" style="margin-top:22px"><button class="btn ghost" id="cl">Borrar cancionero</button></div>`:`<div class="card"><b>Importa tu cancionero</b><p class="s">Elige el PDF que te envió Hakuna. Se lee en tu dispositivo y no se envía a ningún sitio.</p></div>`)+`<label for="f" style="display:block;margin:18px 0 8px;font-weight:600">Elegir el PDF del cancionero</label><input id="f" type="file" accept=".pdf,.txt,application/pdf,text/plain"><details style="margin-top:14px"><summary>Si no funciona, pega aquí el texto</summary><textarea id="pt" rows="6" style="width:100%;margin:10px 0;padding:12px;border-radius:14px;border:1px solid var(--ln);background:var(--sf);color:var(--tx);font:inherit"></textarea><button class="btn" id="pb">Importar texto</button></details><p class="s" id="st"></p>`;
+const st=document.getElementById("st");
+document.getElementById("f").onchange=async e=>{const f=e.target.files[0];if(!f)return;try{st.textContent="Leyendo…";const r=await importar(f,(p,n)=>st.textContent=`Leyendo página ${p} de ${n}…`);if(r.length<5)throw new Error("few");localStorage.setItem("lib",JSON.stringify(r));cant()}catch(x){st.textContent=x.message==="nolib"?"No se pudo cargar el lector de PDF. Comprueba tu conexión.":"No pude leer el archivo ("+x.message+"). Prueba a pegar el texto más abajo."}};
+document.getElementById("pb").onclick=()=>{try{const r=parseText(document.getElementById("pt").value);if(r.length<5)throw new Error("pocas canciones");localStorage.setItem("lib",JSON.stringify(r));cant()}catch(x){st.textContent="No pude leer el texto ("+x.message+")."}};
+if(!L.length)return;
+const l=document.getElementById("l"),q=document.getElementById("q");
+document.getElementById("cl").onclick=()=>{try{localStorage.removeItem("lib")}catch(e){}cant()};
+const draw=()=>{const f=norm(q.value);let h="",last="";L.filter(s=>norm(s.t).includes(f)).forEach(s=>{if(!f&&s.s!==last){h+=`<h2>${esc(s.s||"Otras")}</h2>`;last=s.s}h+=`<button class="it" data-n="${s.n}">${esc(s.t)}<small>${s.n}</small></button>`});l.innerHTML=h||'<p class="s">Sin resultados. Prueba con otra palabra.</p>'};
+q.oninput=draw;draw();l.onclick=e=>{const b=e.target.closest(".it");if(b)song(+b.dataset.n)}}
+function song(n){const o=lib().find(s=>s.n===n);let k=0;
+const sp=()=>{try{return localStorage.getItem("sp"+n)||""}catch(e){return""}};
+const rl=l=>{let s="";[...l.ch].sort((a,b)=>a[0]-b[0]).forEach(([i,c])=>{s+=" ".repeat(s.length?Math.max(1,i-s.length):i)+tr(c,k)});return(s?`<div class="ch">${esc(s)}</div>`:"")+(l.l?`<div>${esc(l.l)}</div>`:"")};
+const id=(sp().match(/track\/([A-Za-z0-9]+)/)||[])[1];
+m.innerHTML=`<button class="btn ghost" id="bk">Volver</button><h1>${esc(o.t)}</h1><p class="s">${esc(o.s||"")}</p><div class="card"><b>Escuchar</b>${id?`<iframe src="https://open.spotify.com/embed/track/${id}" width="100%" height="152" style="border:0;border-radius:12px;margin-top:10px" allow="encrypted-media" loading="lazy" title="Spotify"></iframe>`:`<p class="s">Pega el enlace de Spotify de esta canción.</p>`}<input id="u" placeholder="https://open.spotify.com/track/…" value="${esc(sp())}" style="margin-top:8px"><div class="row" style="margin-top:8px"><button class="btn" id="sv">Guardar enlace</button><a href="https://open.spotify.com/search/${encodeURIComponent("Hakuna Group Music "+o.t)}" target="_blank" rel="noopener">Buscar en Spotify</a></div></div><div class="card"><div class="row"><button class="btn ghost" id="mn" aria-label="Bajar un semitono">−</button><b id="tl">Tono 0</b><button class="btn ghost" id="pl" aria-label="Subir un semitono">+</button></div></div><div class="sg" id="sg"></div>`;
+const sg=document.getElementById("sg"),tl=document.getElementById("tl");
+const upd=()=>{sg.innerHTML=o.lines.map(rl).join("");tl.textContent="Tono "+(k>0?"+":"")+k};upd();
+document.getElementById("bk").onclick=cant;document.getElementById("mn").onclick=()=>{k--;upd()};document.getElementById("pl").onclick=()=>{k++;upd()};
+document.getElementById("sv").onclick=()=>{try{localStorage.setItem("sp"+n,document.getElementById("u").value.trim())}catch(e){}song(n)}}
+const CN={VE:"Venezuela",MX:"México",AR:"Argentina",CR:"Costa Rica"};
+const lab=c=>c.replace(/ (VE|MX|AR|CR)$/,(_,k)=>" ("+CN[k]+")");
+function hora(){let me=null;
+m.innerHTML=`<h1>Horas Santas</h1><p class="s">Toca tu ciudad para ver todos los horarios</p><button class="btn" id="g">Cerca de mí</button><input id="q" type="search" placeholder="Busca tu ciudad" autocomplete="off" style="margin-top:14px"><div id="l"></div>`;
+const g=document.getElementById("g"),q=document.getElementById("q"),l=document.getElementById("l");
+const draw=()=>{const f=norm(q.value),C={};HS.forEach(s=>(C[s.c]=C[s.c]||[]).push(s));
+const r=Object.keys(C).filter(c=>norm(lab(c)).includes(f)).map(c=>({c,n:C[c].length,k:me&&XY[c]?km(me,XY[c]):null}));
+r.sort((a,b)=>me?(a.k??1e9)-(b.k??1e9):lab(a.c).localeCompare(lab(b.c)));
+l.innerHTML=r.map(x=>`<button class="it" data-c="${esc(x.c)}">${esc(lab(x.c))}<small>${x.n} ${x.n>1?"Horas Santas":"Hora Santa"}${x.k!=null?" · "+x.k+" km":""}</small></button>`).join("")||'<p class="s">No hay Horas Santas en esa ciudad.</p>'};
+q.oninput=draw;l.onclick=e=>{const b=e.target.closest(".it");if(b)ciudad(b.dataset.c)};
+g.onclick=()=>{g.textContent="Buscando tu ubicación…";if(!navigator.geolocation){g.textContent="Ubicación no disponible";return}
+navigator.geolocation.getCurrentPosition(p=>{me=[p.coords.latitude,p.coords.longitude];g.textContent="Ordenadas por cercanía";draw()},()=>{g.textContent="Cerca de mí";l.insertAdjacentHTML("afterbegin",'<p class="s">No pude acceder a tu ubicación. Actívala en los ajustes o busca tu ciudad.</p>')},{timeout:10000})};draw()}
+function ciudad(c){const E=HS.filter(s=>s.c===c).sort((a,b)=>"LMXJVSD".indexOf(a.d)-"LMXJVSD".indexOf(b.d)||a.h.localeCompare(b.h));
+const Q=s=>encodeURIComponent(s.p+", "+lab(c));
+m.innerHTML=`<button class="btn ghost" id="bk">Volver</button><h1>${esc(lab(c))}</h1><p class="s">${E.length} ${E.length>1?"Horas Santas":"Hora Santa"}</p>`+E.map((s,i)=>`<div class="card"><b>${esc(s.p)}</b><div style="margin:10px 0">${[...s.g].map(x=>`<div class="row" style="justify-content:space-between"><span>${GN[x]}</span><b>${DN[s.d]} ${s.h}</b></div>`).join("")}</div><div class="row"><button class="btn" data-m="${i}">Ver mapa</button><a href="https://www.google.com/maps/search/?api=1&query=${Q(s)}" target="_blank" rel="noopener">Abrir en Google Maps</a></div><div id="mp${i}"></div></div>`).join("")+`<p class="s">Para contactar con el responsable: <a href="https://hakuna.org/horas-santas/" target="_blank" rel="noopener">hakuna.org/horas-santas</a></p>`;
+document.getElementById("bk").onclick=()=>BK();
+m.onclick=e=>{const b=e.target.closest("[data-m]");if(!b)return;const i=+b.dataset.m,d=document.getElementById("mp"+i);if(d.innerHTML){d.innerHTML="";b.textContent="Ver mapa";return}b.textContent="Ocultar mapa";d.innerHTML=`<iframe src="https://www.google.com/maps?q=${Q(E[i])}&output=embed" width="100%" height="260" style="border:0;border-radius:14px;margin-top:12px" loading="lazy" title="Mapa"></iframe>`}}
+function parseText(txt){const out=[];let cur=null,sec="",pend=null,last=0;
+const fl=()=>{if(pend&&cur)cur.lines.push({l:"",ch:pend});pend=null};
+for(const raw of txt.split(/\r?\n/)){const T=raw.trim().replace(/\s+/g," ");if(!T)continue;
+if(T===T.toUpperCase()&&SEC.has(T)){sec=T.replace(/:$/,"");continue}
+const mt=T.match(/^(\d{1,3})\.\s+(.{2,})$/);
+if(mt){const n=+mt[1];if(n===last+1||n===1){fl();cur={n,t:mt[2].trim(),s:sec,lines:[]};out.push(cur);last=n;continue}}
+if(!cur)continue;
+if(isCh(T)){fl();const ch=[],re=/\S+/g;let x;while((x=re.exec(raw)))ch.push([x.index,nc(x[0])]);pend=ch;continue}
+if(!cur.lines.length&&!pend&&!/[a-z]/.test(T)&&T.length<40&&!/^(INTRO|OUT|SOLO|PUENTE|FINAL|NOTA|ESTRIBILLO|PUNTEO|REPETIR)/.test(T)){cur.t+=" "+T;continue}
+cur.lines.push({l:T,ch:pend?pend.map(([i,c])=>[Math.min(i,T.length),c]):[]});pend=null}
+fl();const by={};out.forEach(s=>{if(!by[s.n]||s.lines.length>by[s.n].lines.length)by[s.n]=s});
+return Object.values(by).filter(s=>s.lines.length).sort((a,b)=>a.n-b.n)}
+async function pdfText(f,prog){
+if(!window.pdfjsLib)throw new Error("nolib");
+pdfjsLib.GlobalWorkerOptions.workerSrc="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js";
+const pdf=await pdfjsLib.getDocument({data:new Uint8Array(await f.arrayBuffer())}).promise;const out=[];
+for(let p=1;p<=pdf.numPages;p++){prog(p,pdf.numPages);const tc=await(await pdf.getPage(p)).getTextContent();const rows=[];
+tc.items.forEach(it=>{if(!it.str.trim())return;const y=it.transform[5];let r=rows.find(r=>Math.abs(r.y-y)<3);if(!r){r={y,it:[]};rows.push(r)}r.it.push({s:it.str,x:it.transform[4],w:it.width})});
+const L=rows.flatMap(r=>r.it).filter(i=>i.s.trim().length>3);const xm=Math.min(...rows.flatMap(r=>r.it).map(i=>i.x),0)||0;
+const xmin=rows.length?Math.min(...rows.flatMap(r=>r.it).map(i=>i.x)):0,cw=L.length?L.reduce((a,i)=>a+i.w/i.s.length,0)/L.length:5;
+rows.sort((a,b)=>b.y-a.y).forEach(r=>{r.it.sort((a,b)=>a.x-b.x);let s="";r.it.forEach(i=>{const col=Math.round((i.x-xmin)/cw);if(s.length<col)s+=" ".repeat(col-s.length);else if(s.length&&!s.endsWith(" ")&&!i.s.startsWith(" "))s+=" ";s+=i.s});out.push(s)})}
+return out.join("\n")}
+async function importar(f,prog){const txt=(/\.txt$/i.test(f.name)||f.type==="text/plain")?await f.text():await pdfText(f,prog);return parseText(txt)}
+const mk=(s,es)=>{const[a,b]=s.split(":");return{n:a,es,c:b.split(",")}};
+const PVs=[..."Madrid:Madrid,Las Rozas,Alcorcón,Valdemoro,Rivas|Murcia:Murcia,Cartagena,Cieza,Yecla|Granada:Granada|Sevilla:Sevilla|Alicante:Alicante,Alcoy|Valencia:Valencia,Ontinyent|Castellón:Castellón|Albacete:Albacete|Ciudad Real:Ciudad Real|Toledo:Toledo,Talavera|Guadalajara:Guadalajara|Zaragoza:Zaragoza|Barcelona:Barcelona|Girona:Girona|Lleida:Lérida|Navarra:Pamplona|Cantabria:Santander|Asturias:Oviedo|Bizkaia:Bilbao|Gipuzkoa:San Sebastián|Burgos:Burgos|Valladolid:Valladolid|Salamanca:Salamanca|A Coruña:A Coruña,Santiago de Compostela|Badajoz:Badajoz,Mérida|Cáceres:Cáceres|Córdoba:Córdoba|Málaga:Málaga|Almería:Almería|Cádiz:El Puerto de Santa María|Islas Baleares:Mallorca|Las Palmas:Gran Canaria|Santa Cruz de Tenerife:Tenerife".split("|").map(s=>mk(s,1)),..."México:CDMX,Toluca,Chihuahua,Guadalajara MX,Querétaro,Los Cabos,Culiacán,Monterrey,Morelia,León,Irapuato,Celaya,Aguascalientes,Veracruz,Zacatecas,Cuautitlán Izcalli|Perú:Lima|Suiza:Ginebra,Lausana|Colombia:Cali,Bogotá,Rionegro|Venezuela:Valencia VE,Barquisimeto,Caracas,Turmero,Maracay|Alemania:Berlín,Frankfurt,Núremberg|Países Bajos:Eindhoven,Maastricht|Portugal:Lisboa,Oporto,Aveiro|Costa Rica:San José CR,Mercedes Sur,Venecia,Cartago|Argentina:San Justo,Rosario,Buenos Aires,Mendoza,Santa Fe AR|EE. UU.:El Paso,Washington,San Antonio,Boston|Irlanda:Dublín|Ecuador:Guayaquil,Quito|Polonia:Varsovia|Reino Unido:Londres|Bélgica:Bruselas|Luxemburgo:Luxemburgo|Italia:Roma,Milán|Francia:París|Honduras:Tegucigalpa|Chile:Santiago de Chile|Uruguay:Montevideo|Corea del Sur:Seúl|Paraguay:Asunción|Guatemala:Guatemala,Antigua".split("|").map(s=>mk(s,0))];
+{const k=new Set(PVs.flatMap(p=>p.c)),ms=[...new Set(HS.map(s=>s.c))].filter(c=>!k.has(c));if(ms.length)PVs.push({n:"Otros",es:0,c:ms})}
+let ME=null,BK=()=>hora();
+const cnt=P=>HS.filter(s=>P.c.includes(s.c)).length;
+const dst=c=>ME&&XY[c]?km(ME,XY[c]):null;
+const pd=P=>{const d=P.c.map(dst).filter(x=>x!=null);return d.length?Math.min(...d):null};
+function hora(){BK=()=>hora();
+m.innerHTML=`<h1>Horas Santas</h1><p class="s">Elige tu provincia o país, y después tu pueblo</p><button class="btn" id="g">Cerca de mí</button><input id="q" type="search" placeholder="Busca un pueblo o ciudad" autocomplete="off" style="margin-top:14px"><div id="l"></div>`;
+const g=document.getElementById("g"),q=document.getElementById("q"),l=document.getElementById("l");
+const draw=()=>{const f=norm(q.value);
+if(f){const cs=[...new Set(HS.map(s=>s.c))].filter(c=>norm(lab(c)).includes(f)).sort((a,b)=>lab(a).localeCompare(lab(b)));
+l.innerHTML=cs.map(c=>`<button class="it" data-c="${esc(c)}">${esc(lab(c))}<small>${HS.filter(s=>s.c===c).length} Horas Santas</small></button>`).join("")||'<p class="s">No hay Horas Santas en ese sitio.</p>';return}
+l.innerHTML=[["España",1],["Resto del mundo",0]].map(([t,es])=>{const ps=PVs.map((P,i)=>({P,i})).filter(x=>x.P.es===es);ps.sort((a,b)=>ME?(pd(a.P)??1e9)-(pd(b.P)??1e9):a.P.n.localeCompare(b.P.n));
+return `<h2>${t}</h2>`+ps.map(({P,i})=>{const d=ME?pd(P):null;return `<button class="it" data-p="${i}">${esc(P.n)}<small>${cnt(P)} · ${P.c.length} ${P.c.length>1?"localidades":"localidad"}${d!=null?" · "+d+" km":""}</small></button>`}).join("")}).join("")};
+q.oninput=draw;l.onclick=e=>{const b=e.target.closest(".it");if(!b)return;if(b.dataset.c)ciudad(b.dataset.c);else prov(PVs[+b.dataset.p])};
+g.onclick=()=>{g.textContent="Buscando tu ubicación…";if(!navigator.geolocation){g.textContent="Ubicación no disponible";return}
+navigator.geolocation.getCurrentPosition(p=>{ME=[p.coords.latitude,p.coords.longitude];g.textContent="Ordenadas por cercanía";draw()},()=>{g.textContent="Cerca de mí";l.insertAdjacentHTML("afterbegin",'<p class="s">No pude acceder a tu ubicación. Actívala en los ajustes o elige tu provincia.</p>')},{timeout:10000})};draw()}
+function prov(P){BK=()=>prov(P);
+const cs=[...P.c].sort((a,b)=>ME?(dst(a)??1e9)-(dst(b)??1e9):lab(a).localeCompare(lab(b)));
+m.innerHTML=`<button class="btn ghost" id="bk">Volver</button><h1>${esc(P.n)}</h1><p class="s">Elige tu pueblo o ciudad</p><div id="l">${cs.map(c=>`<button class="it" data-c="${esc(c)}">${esc(lab(c))}<small>${HS.filter(s=>s.c===c).length} ${HS.filter(s=>s.c===c).length>1?"Horas Santas":"Hora Santa"}${dst(c)!=null?" · "+dst(c)+" km":""}</small></button>`).join("")}</div>`;
+document.getElementById("bk").onclick=hora;document.getElementById("l").onclick=e=>{const b=e.target.closest(".it");if(b)ciudad(b.dataset.c)}}
+const wt=c=>c===" "?.28:/[mwMW@]/.test(c)?.85:/[ilIjtf.,;:'!|()]/.test(c)?.3:/[A-Z#]/.test(c)?.65:.5;
+const cum=s=>{const a=[0];for(const c of s)a.push(a[a.length-1]+wt(c));return a};
+function layout(items,pw){
+const its=items.filter(i=>i.s.trim());const mid=pw/2,cnt={};
+its.forEach(i=>{if(i.x>mid*.8){const k=Math.round(i.x);cnt[k]=(cnt[k]||0)+1}});
+let xr=0,best=0;for(const k in cnt)if(cnt[k]>best){best=cnt[k];xr=+k}
+const cols=best>=10?[its.filter(i=>i.x<xr-8),its.filter(i=>i.x>=xr-8)]:[its];const out=[];
+for(const c of cols){const rows=[];
+c.forEach(i=>{let r=rows.find(r=>Math.abs(r.y-i.y)<3);if(!r){r={y:i.y,it:[]};rows.push(r)}r.it.push(i)});
+rows.sort((a,b)=>b.y-a.y);
+rows.forEach(r=>{r.it.sort((a,b)=>a.x-b.x);let t="",pe=null;r.it.forEach(i=>{if(pe!==null&&i.x-pe>1.5&&!t.endsWith(" ")&&!i.s.startsWith(" "))t+=" ";t+=i.s;pe=i.x+i.w});r.t=t.trim();r.x0=r.it[0].x;const e=r.it[r.it.length-1];r.x1=e.x+e.w});
+rows.forEach((r,j)=>{if(!isCh(r.t)){out.push(r.t);return}
+const ly=rows[j+1]&&!isCh(rows[j+1].t)&&r.y-rows[j+1].y<40?rows[j+1]:null;
+const toks=[];r.it.forEach(i=>{const cw=cum(i.s),re=/\S+/g;let m;while((m=re.exec(i.s)))toks.push({c:m[0],x:i.x+i.w*cw[m.index]/cw[cw.length-1]})});
+let s="";toks.forEach(tk=>{let idx;
+if(ly){const cw=cum(ly.t),tot=cw[cw.length-1],f=Math.max(0,Math.min(1,(tk.x-ly.x0)/Math.max(ly.x1-ly.x0,1)));idx=0;while(idx<ly.t.length&&cw[idx]<f*tot-1e-6)idx++}
+else idx=Math.round((tk.x-r.x0)/5);
+s+=" ".repeat(Math.max(s?1:0,idx-s.length))+tk.c});out.push(s)})}
+return out}
+async function pdfText(f,prog){
+if(!window.pdfjsLib)throw new Error("nolib");
+pdfjsLib.GlobalWorkerOptions.workerSrc="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js";
+const pdf=await pdfjsLib.getDocument({data:new Uint8Array(await f.arrayBuffer())}).promise;const out=[];
+for(let p=1;p<=pdf.numPages;p++){prog(p,pdf.numPages);const pg=await pdf.getPage(p),tc=await pg.getTextContent();
+out.push(...layout(tc.items.map(i=>({s:i.str,x:i.transform[4],y:i.transform[5],w:i.width})),pg.view[2]))}
+return out.join("\n")}
+function parseText(txt){let out=[],cur=null,sec="",pend=null,last=0;
+const fl=()=>{if(pend&&cur)cur.lines.push({l:"",ch:pend});pend=null};
+for(const raw of txt.split(/\r?\n/)){const T=raw.trim().replace(/\s+/g," ");if(!T)continue;
+if(T===T.toUpperCase()&&SEC.has(T)){sec=T.replace(/:$/,"");continue}
+const mt=T.match(/^(\d{1,3})\.\s+(.{2,})$/);
+if(mt){const n=+mt[1];if(n===last+1||n===1){fl();if(n===1&&last>=20)out=[];cur={n,t:mt[2].trim(),s:sec,lines:[],c:0};out.push(cur);last=n;continue}}
+if(!cur)continue;
+if(isCh(T)){fl();const ch=[],re=/\S+/g;let x;while((x=re.exec(raw)))ch.push([x.index,nc(x[0])]);pend=ch;continue}
+if(!cur.lines.length&&!pend&&!cur.c&&!/[a-z]/.test(T)&&T.length<40&&!/^(INTRO|OUT|SOLO|PUENTE|FINAL|NOTA|ESTRIBILLO|PUNTEO|REPETIR)/.test(T)){cur.t+=" "+T;cur.c=1;continue}
+cur.lines.push({l:T,ch:pend?pend.map(([i,c])=>[Math.min(i,T.length),c]):[]});pend=null}
+fl();const by={};out.forEach(s=>{by[s.n]=s});
+return Object.values(by).filter(s=>s.lines.length).sort((a,b)=>a.n-b.n)}
+document.head.insertAdjacentHTML("beforeend",`<style>.pl{padding:16px;border-radius:28px;border:1px solid var(--ln);background:color-mix(in srgb,var(--sf) 85%,var(--ac) 15%);margin:14px 0}.pl .top{display:flex;gap:14px;align-items:center}.pl .cv{width:96px;height:96px;flex:none;border-radius:20px;background:linear-gradient(145deg,var(--ac),#6b4a14);display:grid;place-items:center;color:#fff}.pl .rt{min-width:0;flex:1}.pl .rt b{display:block;font:700 19px/1.2 Manrope,sans-serif;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.pl .rt small{color:var(--mu)}.pl .ct{display:flex;justify-content:space-between;align-items:center;margin-top:8px}.pl .ct button{background:none;border:0;color:var(--tx);padding:6px;cursor:pointer;display:grid;place-items:center}.pl .ct button:disabled{opacity:.35}.pl input[type=range]{padding:0;border:0;background:none;accent-color:var(--ac);height:28px;margin:14px 0 4px}.pl .tm{display:flex;justify-content:space-between;color:var(--mu);font-size:13px}</style>`);
+const idb=()=>new Promise((res,rej)=>{const r=indexedDB.open("lumen",1);r.onupgradeneeded=()=>r.result.createObjectStore("a");r.onsuccess=()=>res(r.result);r.onerror=()=>rej(r.error)});
+const aget=async k=>{const d=await idb();return new Promise(res=>{const q=d.transaction("a").objectStore("a").get(k);q.onsuccess=()=>res(q.result);q.onerror=()=>res(null)})};
+const aput=async(k,v)=>{const d=await idb();return new Promise((res,rej)=>{const q=d.transaction("a","readwrite").objectStore("a").put(v,k);q.onsuccess=()=>res();q.onerror=()=>rej(q.error)})};
+const IC={v:'<path d="M6 6h2v12H6zM20 6v12L9.500 12z"/>',n:'<path d="M16 6h2v12h-2zM4 6v12l10.500-6z"/>',p:'<path d="M8 5v14l11-7z"/>',z:'<path d="M6 5h4v14H6zM14 5h4v14h-4z"/>'};
+const sv=(k,s=34)=>`<svg viewBox="0 0 24 24" width="${s}" height="${s}" fill="currentColor">${IC[k]}</svg>`;
+function song(n,auto){const L=lib(),ix=L.findIndex(s=>s.n===n),o=L[ix];let k=0,url=null;
+const sp=()=>{try{return localStorage.getItem("sp"+n)||""}catch(e){return""}};
+const rl=l=>{let s="";[...l.ch].sort((a,b)=>a[0]-b[0]).forEach(([i,c])=>{s+=" ".repeat(s.length?Math.max(1,i-s.length):i)+tr(c,k)});return(s?`<div class="ch">${esc(s)}</div>`:"")+(l.l?`<div>${esc(l.l)}</div>`:"")};
+const id=(sp().match(/track\/([A-Za-z0-9]+)/)||[])[1];
+m.innerHTML=`<button class="btn ghost" id="bk">Volver</button><h1>${esc(o.t)}</h1><p class="s">${esc(o.s||"")}</p>
+<div class="pl"><a id="yl" target="_blank" rel="noopener" style="display:block;text-align:right;font-size:13px;margin:-4px 0 10px">Pulsa para ver en YouTube</a><div class="top"><div class="cv" id="cv"><svg viewBox="0 0 24 24" width="44" height="44" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M9 18V5l11-2v13"/><circle cx="6.500" cy="18" r="2.500"/><circle cx="17.500" cy="16" r="2.500"/></svg></div><div class="rt"><b>${esc(o.t)}</b><small id="ps">Hakuna Group Music</small><div class="ct"><button id="pv" aria-label="Anterior">${sv("v",30)}</button><button id="pp" aria-label="Reproducir o pausar">${sv("p",44)}</button><button id="nx" aria-label="Siguiente">${sv("n",30)}</button></div></div></div><input type="range" id="sk" min="0" max="1000" value="0" aria-label="Posición"><div class="tm"><span id="t1">–:––</span><span id="t2">–:––</span></div><div id="ar"></div><div id="yw"></div><audio id="au" preload="metadata"></audio></div>
+<details style="margin:14px 0"><summary>YouTube</summary><input id="yu" placeholder="https://www.youtube.com/watch?v=…" style="margin:10px 0 8px"><button class="btn" id="ys">Guardar enlace</button></details><details style="margin:14px 0"><summary>Spotify</summary>${id?`<iframe src="https://open.spotify.com/embed/track/${id}" width="100%" height="152" style="border:0;border-radius:12px;margin-top:10px" allow="encrypted-media" loading="lazy" title="Spotify"></iframe>`:""}<input id="u" placeholder="https://open.spotify.com/track/…" value="${esc(sp())}" style="margin-top:10px"><div class="row" style="margin-top:8px"><button class="btn" id="sv">Guardar enlace</button><a href="https://open.spotify.com/search/${encodeURIComponent("Hakuna Group Music "+o.t)}" target="_blank" rel="noopener">Buscar en Spotify</a></div></details>
+<div class="card"><div class="row"><button class="btn ghost" id="mn" aria-label="Bajar un semitono">−</button><b id="tl">Tono 0</b><button class="btn ghost" id="up" aria-label="Subir un semitono">+</button></div></div><div class="sg" id="sg"></div>`;
+const $=i=>document.getElementById(i),au=$("au"),pp=$("pp"),sk=$("sk"),t1=$("t1"),t2=$("t2"),ps=$("ps"),ar=$("ar"),sg=$("sg"),tl=$("tl");
+const fm=s=>isFinite(s)?Math.floor(s/60)+":"+String(Math.floor(s%60)).padStart(2,"0"):"–:––";
+const stop=()=>{au.pause();if(url)URL.revokeObjectURL(url);if(window.__ym)removeEventListener("message",window.__ym);const w=document.getElementById("yw");if(w)w.innerHTML=""};
+const go=(d,a)=>{const t=L[ix+d];if(t){stop();song(t.n,a)}};
+$("pv").disabled=ix<1;$("nx").disabled=ix>=L.length-1;
+const DY={"un sitio":"mZmfC-6mtjw","loco":"wNnjwdpoauo","en medio del fuego":"ODgBOVcmilM"};
+const yl=()=>{try{const d=DY[norm(o.t)];return localStorage.getItem("yt"+n)||(d?"https://youtu.be/"+d:"")}catch(e){return""}};$("yu").value=yl();
+const yid=(yl().match(/(?:v=|youtu\.be\/|embed\/)([A-Za-z0-9_-]{11})/)||[])[1];
+let yst=0,yd=0;const yw=$("yw"),yf=yid?document.createElement("iframe"):null;
+$("yl").href=yid?`https://www.youtube.com/watch?v=${yid}`:`https://www.youtube.com/results?search_query=${encodeURIComponent("Hakuna Group Music "+o.t)}`;$("yw").style.display="none";let ygot=false;const thumb=()=>{const c=$("cv");if(c&&yid&&!c.querySelector("img"))c.innerHTML=`<img src="https://i.ytimg.com/vi/${yid}/hqdefault.jpg" alt="" style="width:100%;height:100%;object-fit:cover;border-radius:20px">`};
+const yp=(f,a=[])=>{try{yf.contentWindow.postMessage(JSON.stringify({event:"command",func:f,args:a}),"*")}catch(e){}};
+if(yf){yf.src=`https://www.youtube.com/embed/${yid}?enablejsapi=1&playsinline=1&rel=0&modestbranding=1`;yf.width="100%";yf.height="210";yf.allow="autoplay; encrypted-media";yf.title="YouTube";yf.style.cssText="border:0;border-radius:14px;margin-top:12px";yw.appendChild(yf);
+yf.onload=()=>{try{yf.contentWindow.postMessage(JSON.stringify({event:"listening",id:1,channel:"widget"}),"*")}catch(e){}if(auto){$("yw").style.display="";yp("playVideo")}};
+const onm=e=>{if(!/youtube\.com/.test(e.origin))return;let d;try{d=JSON.parse(e.data)}catch(x){return}const i=d.info;if(!i)return;ygot=true;
+if(i.duration){yd=i.duration;t2.textContent=fm(yd)}if(i.currentTime!=null){sk.value=yd?i.currentTime/yd*1000:0;t1.textContent=fm(i.currentTime)}
+if(i.playerState!=null){yst=i.playerState;if(yst===1)thumb();pp.innerHTML=sv(yst===1?"z":"p",44);if(yst===0)go(1,true)}};
+window.__ym=onm;addEventListener("message",onm)}
+$("ys").onclick=()=>{try{localStorage.setItem("yt"+n,$("yu").value.trim())}catch(e){}stop();song(n)};
+const load=async()=>{let b=null;try{b=await aget("a"+n)}catch(e){}const has=!!b;pp.disabled=sk.disabled=!(has||yid);ps.textContent=has?"Hakuna Group Music":(yid?"Hakuna Group Music · YouTube":"Sin audio todavía");
+ar.innerHTML=has?'<button class="btn ghost" id="rm" style="margin-top:10px">Quitar audio</button>':'<label for="af" style="display:block;font-weight:600;margin:12px 0 6px">Añadir el audio de esta canción</label><input id="af" type="file" accept="audio/*">';
+if(has){url=URL.createObjectURL(b);au.src=url;$("rm").onclick=async()=>{try{await aput("a"+n,null)}catch(e){}stop();load()};if(auto)au.play().catch(()=>{})}
+else $("af").onchange=async e=>{const f=e.target.files[0];if(!f)return;try{await aput("a"+n,f)}catch(x){ps.textContent="No se pudo guardar el audio";return}load()}};
+pp.onclick=()=>{if(au.getAttribute("src"))au.paused?au.play():au.pause();else if(yf){$("yw").style.display="";yp(yst===1?"pauseVideo":"playVideo");thumb();if(!ygot)setTimeout(()=>{if(!ygot)ps.innerHTML=`Aquí no se puede reproducir · <a href="${$("yl").href}" target="_blank" rel="noopener">Abrir en YouTube</a>`},3000)}};
+au.onplay=()=>{pp.innerHTML=sv("z",44)};au.onpause=()=>{pp.innerHTML=sv("p",44)};
+au.ontimeupdate=()=>{sk.value=au.duration?au.currentTime/au.duration*1000:0;t1.textContent=fm(au.currentTime)};
+au.onloadedmetadata=()=>{t2.textContent=fm(au.duration)};au.onended=()=>go(1,true);
+sk.oninput=()=>{if(au.getAttribute("src")){if(au.duration)au.currentTime=sk.value/1000*au.duration}else if(yf&&yd)yp("seekTo",[sk.value/1000*yd,true])};
+$("pv").onclick=()=>go(-1,!au.paused);$("nx").onclick=()=>go(1,!au.paused);
+if("mediaSession"in navigator){try{navigator.mediaSession.metadata=new MediaMetadata({title:o.t,artist:"Hakuna Group Music"});navigator.mediaSession.setActionHandler("previoustrack",()=>go(-1,true));navigator.mediaSession.setActionHandler("nexttrack",()=>go(1,true))}catch(e){}}
+const upd=()=>{sg.innerHTML=o.lines.map(rl).join("");tl.textContent="Tono "+(k>0?"+":"")+k};upd();
+$("bk").onclick=()=>{stop();cant()};$("mn").onclick=()=>{k--;upd()};$("up").onclick=()=>{k++;upd()};
+$("sv").onclick=()=>{try{localStorage.setItem("sp"+n,$("u").value.trim())}catch(e){}stop();song(n)};
+load()}
+document.querySelectorAll("nav button").forEach(b=>b.onclick=()=>show(b.dataset.t));show("c");
+</script></body></html>
