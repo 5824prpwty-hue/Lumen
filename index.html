@@ -273,13 +273,14 @@ fl();
 const by={};out.forEach(s=>{if(!by[s.n]||s.lines.length>by[s.n].lines.length)by[s.n]=s});
 return Object.values(by).filter(s=>s.lines.length).sort((a,b)=>a.n-b.n)}
 function cant(){const L=lib();
-m.innerHTML=`<h1>Cancionero</h1><p class="s">${L.length?L.length+" canciones":"Importa tu cancionero para empezar"}</p>`+(L.length?`<input id="q" type="search" placeholder="Busca una canción, p. ej. Huracán" autocomplete="off"><div id="l"></div><div class="row" style="margin-top:22px"><button class="btn ghost" id="cl">Borrar cancionero</button></div>`:`<div class="card"><b>Importa tu cancionero</b><p class="s">Elige el PDF que te envió Hakuna. Se lee en tu dispositivo y no se envía a ningún sitio.</p></div>`)+`<label for="f" style="display:block;margin:18px 0 8px;font-weight:600">Elegir el PDF del cancionero</label><input id="f" type="file" accept=".pdf,.txt,application/pdf,text/plain"><details style="margin-top:14px"><summary>Si no funciona, pega aquí el texto</summary><textarea id="pt" rows="6" style="width:100%;margin:10px 0;padding:12px;border-radius:14px;border:1px solid var(--ln);background:var(--sf);color:var(--tx);font:inherit"></textarea><button class="btn" id="pb">Importar texto</button></details><p class="s" id="st"></p>`;
+m.innerHTML=`<h1>Cancionero</h1><p class="s">${L.length?L.length+" canciones":"Importa tu cancionero para empezar"}</p>`+(L.length?`<input id="q" type="search" placeholder="Busca una canción, p. ej. Huracán" autocomplete="off"><div id="l"></div><div class="row" style="margin-top:22px"><button class="btn ghost" id="ex">Exportar cancionero</button><button class="btn ghost" id="cl">Borrar cancionero</button></div>`:`<div class="card"><b>Importa tu cancionero</b><p class="s">Elige el PDF que te envió Hakuna. Se lee en tu dispositivo y no se envía a ningún sitio.</p></div>`)+`<label for="f" style="display:block;margin:18px 0 8px;font-weight:600">Elegir el PDF del cancionero</label><input id="f" type="file" accept=".pdf,.txt,application/pdf,text/plain"><details style="margin-top:14px"><summary>Si no funciona, pega aquí el texto</summary><textarea id="pt" rows="6" style="width:100%;margin:10px 0;padding:12px;border-radius:14px;border:1px solid var(--ln);background:var(--sf);color:var(--tx);font:inherit"></textarea><button class="btn" id="pb">Importar texto</button></details><p class="s" id="st"></p>`;
 const st=document.getElementById("st");
-document.getElementById("f").onchange=async e=>{const f=e.target.files[0];if(!f)return;try{st.textContent="Leyendo…";const r=await importar(f,(p,n)=>st.textContent=`Leyendo página ${p} de ${n}…`);if(r.length<5)throw new Error("few");localStorage.setItem("lib",JSON.stringify(r));cant()}catch(x){st.textContent=x.message==="nolib"?"No se pudo cargar el lector de PDF. Comprueba tu conexión.":"No pude leer el archivo ("+x.message+"). Prueba a pegar el texto más abajo."}};
-document.getElementById("pb").onclick=()=>{try{const r=parseText(document.getElementById("pt").value);if(r.length<5)throw new Error("pocas canciones");localStorage.setItem("lib",JSON.stringify(r));cant()}catch(x){st.textContent="No pude leer el texto ("+x.message+")."}};
+document.getElementById("f").onchange=async e=>{const f=e.target.files[0];if(!f)return;try{st.textContent="Leyendo…";const r=await importar(f,(p,n)=>st.textContent=`Leyendo página ${p} de ${n}…`);if(r.length<5)throw new Error("few");localStorage.setItem("lib",JSON.stringify(r));localStorage.removeItem("libsrc");cant()}catch(x){st.textContent=x.message==="nolib"?"No se pudo cargar el lector de PDF. Comprueba tu conexión.":"No pude leer el archivo ("+x.message+"). Prueba a pegar el texto más abajo."}};
+document.getElementById("pb").onclick=()=>{try{const r=parseText(document.getElementById("pt").value);if(r.length<5)throw new Error("pocas canciones");localStorage.setItem("lib",JSON.stringify(r));localStorage.removeItem("libsrc");cant()}catch(x){st.textContent="No pude leer el texto ("+x.message+")."}};
 if(!L.length)return;
 const l=document.getElementById("l"),q=document.getElementById("q");
-document.getElementById("cl").onclick=()=>{try{localStorage.removeItem("lib")}catch(e){}cant()};
+document.getElementById("ex").onclick=()=>{const b=new Blob([JSON.stringify(L)],{type:"application/json"}),a=document.createElement("a");a.href=URL.createObjectURL(b);a.download="cancionero.json";document.body.appendChild(a);a.click();a.remove()};
+document.getElementById("cl").onclick=()=>{try{localStorage.removeItem("lib");localStorage.removeItem("libsrc")}catch(e){}cant()};
 const draw=()=>{const f=norm(q.value);let h="",last="";L.filter(s=>norm(s.t).includes(f)).forEach(s=>{if(!f&&s.s!==last){h+=`<h2>${esc(s.s||"Otras")}</h2>`;last=s.s}h+=`<button class="it" data-n="${s.n}">${esc(s.t)}<small>${s.n}</small></button>`});l.innerHTML=h||'<p class="s">Sin resultados. Prueba con otra palabra.</p>'};
 q.oninput=draw;draw();l.onclick=e=>{const b=e.target.closest(".it");if(b)song(+b.dataset.n)}}
 function song(n){const o=lib().find(s=>s.n===n);let k=0;
@@ -438,5 +439,39 @@ const upd=()=>{sg.innerHTML=o.lines.map(rl).join("");tl.textContent="Tono "+(k>0
 $("bk").onclick=()=>{stop();cant()};$("mn").onclick=()=>{k--;upd()};$("up").onclick=()=>{k++;upd()};
 $("sv").onclick=()=>{try{localStorage.setItem("sp"+n,$("u").value.trim())}catch(e){}stop();song(n)};
 load()}
+fetch("cancionero.json").then(r=>r.ok?r.json():null).then(d=>{try{if(Array.isArray(d)&&d.length>5&&(!lib().length||localStorage.getItem("libsrc")==="ship")){localStorage.setItem("lib",JSON.stringify(d));localStorage.setItem("libsrc","ship");if(tab==="c"&&!document.querySelector(".sg"))cant()}}catch(e){}}).catch(()=>{});
+const SECN=["HAKUNA","MI POBRE LOCO","PASIÓN","SENCILLAMENTE","QAOS","CAPRICHO","EL ARTE DE VIVIR","TÚ","MISA","VILLANCICOS","VILLANCICOS HKN","OTRAS CANCIONES HKN","HORA SANTA","SANTA MISA","OTRAS CANCIONES DE MISA"];
+const ES2EN={DO:"C",RE:"D",MI:"E",FA:"F",SOL:"G",LA:"A",SI:"B"};
+const spc=l=>{const t=l.trim().split(/\s+/);return t.every(x=>/^(DO|RE|MI|FA|SOL|LA|SI)[#b]?(m|M|7)?$/.test(x))?l.replace(/\S+/g,x=>{const m=x.match(/^(DO|RE|MI|FA|SOL|LA|SI)([#b]?)(.*)$/);return ES2EN[m[1]]+m[2]+m[3]}):l};
+function parseText(txt){let out=[],cur=null,sec="",pend=null,last=0,hb="";
+const fl=()=>{if(pend&&cur)cur.lines.push({l:"",ch:pend});pend=null};
+for(let raw of txt.split(/\r?\n/)){raw=spc(raw);const T=raw.trim().replace(/\s+/g," ");if(!T)continue;
+const U=T.replace(/:$/,"");
+if(U===U.toUpperCase()&&!/\d/.test(U)){const c=(hb+" "+U).trim();if(SECN.includes(c)){sec=c;hb="";continue}if(SECN.some(s=>s.startsWith(c+" "))){hb=c;continue}}
+hb="";
+const mt=T.match(/^(\d{1,3})\.\s+(.{2,})$/);
+if(mt){const n=+mt[1];if(n===last+1||n===1){fl();if(n===1&&last>=20)out=[];cur={n,t:mt[2].trim(),s:sec,lines:[],c:0};out.push(cur);last=n;continue}}
+if(!cur)continue;
+if(isCh(T)){fl();const ch=[],re=/\S+/g;let x;while((x=re.exec(raw)))ch.push([x.index,nc(x[0])]);pend=ch;continue}
+if(!cur.lines.length&&!pend&&!cur.c&&!/[a-z]/.test(T)&&T.length<40&&!/^(INTRO|OUT|SOLO|PUENTE|FINAL|NOTA|ESTRIBILLO|PUNTEO|REPETIR)/.test(T)){cur.t+=" "+T;cur.c=1;continue}
+cur.lines.push({l:T,ch:pend?pend.map(([i,c])=>[Math.min(i,T.length),c]):[]});pend=null}
+fl();const by={};out.forEach(s=>{by[s.n]=s});
+return Object.values(by).filter(s=>s.lines.length).sort((a,b)=>a.n-b.n)}
+function layout(items,pw){
+const its=items.filter(i=>i.s.trim());
+let g=null;{const iv=its.map(i=>[i.x,i.x+i.w]);let best=0,bs=0;for(let x=pw*.3;x<=pw*.7;x+=2){if(!iv.some(([a,b])=>a<x&&x<b)){if(!bs)bs=x;if(x-bs>best){best=x-bs;g=(bs+x)/2}}else bs=0}if(best<10)g=null}
+const cols=g?[its.filter(i=>i.x<g),its.filter(i=>i.x>=g)]:[its];const out=[];
+for(const c of cols){const rows=[];
+c.forEach(i=>{let r=rows.find(r=>Math.abs(r.y-i.y)<3);if(!r){r={y:i.y,it:[]};rows.push(r)}r.it.push(i)});
+rows.sort((a,b)=>b.y-a.y);
+rows.forEach(r=>{r.it.sort((a,b)=>a.x-b.x);let t="",pe=null;r.it.forEach(i=>{if(pe!==null&&i.x-pe>1.5&&!t.endsWith(" ")&&!i.s.startsWith(" "))t+=" ";t+=i.s;pe=i.x+i.w});r.t=t.trim();r.x0=r.it[0].x;const e=r.it[r.it.length-1];r.x1=e.x+e.w});
+rows.forEach((r,j)=>{if(!isCh(r.t)){out.push(r.t);return}
+const ly=rows[j+1]&&!isCh(rows[j+1].t)&&r.y-rows[j+1].y<40?rows[j+1]:null;
+const toks=[];r.it.forEach(i=>{const cw=cum(i.s),re=/\S+/g;let m;while((m=re.exec(i.s)))toks.push({c:m[0],x:i.x+i.w*cw[m.index]/cw[cw.length-1]})});
+let s="";toks.forEach(tk=>{let idx;
+if(ly){const cw=cum(ly.t),tot=cw[cw.length-1],f=Math.max(0,Math.min(1,(tk.x-ly.x0)/Math.max(ly.x1-ly.x0,1)));idx=0;while(idx<ly.t.length&&cw[idx]<f*tot-1e-6)idx++}
+else idx=Math.round((tk.x-r.x0)/5);
+s+=" ".repeat(Math.max(s?1:0,idx-s.length))+tk.c});out.push(s)})}
+return out}
 document.querySelectorAll("nav button").forEach(b=>b.onclick=()=>show(b.dataset.t));show("c");
 </script></body></html>
